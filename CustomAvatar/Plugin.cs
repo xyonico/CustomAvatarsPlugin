@@ -158,7 +158,7 @@ namespace CustomAvatar
 
 		public string Version
 		{
-			get { return "4.5.0"; }
+			get { return "4.6.0"; }
 		}
 
 		public static void Log(object message)
@@ -231,7 +231,11 @@ namespace CustomAvatar
 		private void SceneTransitionDidFinish()
 		{
 			Camera mainCamera = Camera.main;
-			SetCameraCullingMask(mainCamera);
+
+			if (mainCamera)
+			{
+				SetCameraCullingMask(mainCamera);
+			}
 			
 			PlayerAvatarManager?.OnSceneTransitioned(SceneManager.GetActiveScene());
 		}
