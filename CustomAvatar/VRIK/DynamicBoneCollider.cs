@@ -238,8 +238,54 @@ public class DynamicBoneCollider : MonoBehaviour
 					center2.z += num2;
 					break;
 				}
+			#if PLUGIN
 				Gizmos.DrawWireSphere(base.transform.TransformPoint(center), num);
 				Gizmos.DrawWireSphere(base.transform.TransformPoint(center2), num);
+			#else
+				// Capsule gizmo collider representation by All4thlulz
+				// https://pastebin.com/FX9vGmHS
+				Vector3 start = transform.TransformPoint(center);
+				Vector3 end = transform.TransformPoint(center2);
+
+				Vector3 up = (end - start).normalized * num;
+				Vector3 forward = Vector3.Slerp(up, -up, 0.5f);
+				Vector3 right = Vector3.Cross(up, forward).normalized * num;
+
+				Color capsuleColor = Gizmos.color;
+
+				// By default, Handles have a zTest of Always.
+				// For 3D gizmo icons we want to change the color depending on visibility 
+				// TODO: Stop color from changing if scene view icons are set to 2D
+				for (int i = 0; i < 2; i++)
+				{
+					if (i == 0)
+					{
+						UnityEditor.Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual; //Visibly in front of an object
+						UnityEditor.Handles.color = capsuleColor;
+					}
+					else
+					{
+						UnityEditor.Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater; //Visibly behind an object
+						UnityEditor.Handles.color = new Color(capsuleColor.r, capsuleColor.g, capsuleColor.b, 0.15f);
+					}
+
+					//Endcap circles
+					UnityEditor.Handles.DrawWireDisc(start, up, num);
+					UnityEditor.Handles.DrawWireDisc(end, up, num);
+
+					//Side lines
+					UnityEditor.Handles.DrawLine(start + right, end + right);
+					UnityEditor.Handles.DrawLine(start - right, end - right);
+					UnityEditor.Handles.DrawLine(start + forward, end + forward);
+					UnityEditor.Handles.DrawLine(start - forward, end - forward);
+
+					//Endcaps
+					UnityEditor.Handles.DrawWireArc(start, right, forward, 180, num);
+					UnityEditor.Handles.DrawWireArc(start, forward, -right, 180, num);
+					UnityEditor.Handles.DrawWireArc(end, right, -forward, 180, num);
+					UnityEditor.Handles.DrawWireArc(end, forward, right, 180, num);
+				}
+			#endif
 			}
 		}
 	}
